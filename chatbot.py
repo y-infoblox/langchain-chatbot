@@ -7,19 +7,16 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_community.chat_message_histories import ChatMessageHistory
 
-# LLM
 llm = ChatGroq(model="llama-3.3-70b-versatile")
 
-# Prompt
 prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a helpful DevOps tutor. Explain things simply."),
     ("human", "{input}")
 ])
 
-# Chain
 chain = prompt | llm
 
-# 🧠 Memory Store
+
 store = {}
 
 def get_session_history(session_id):
@@ -27,14 +24,14 @@ def get_session_history(session_id):
         store[session_id] = ChatMessageHistory()
     return store[session_id]
 
-# 🔥 Add memory to chain
+
 chain_with_memory = RunnableWithMessageHistory(
     chain,
     get_session_history,
     input_messages_key="input"
 )
 
-# Chat loop
+
 while True:
     user_input = input("You: ")
 
