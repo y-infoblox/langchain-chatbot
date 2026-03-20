@@ -1,46 +1,100 @@
 from dotenv import load_dotenv
-import os
 load_dotenv()
 
 from langchain_groq import ChatGroq
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.runnables.history import RunnableWithMessageHistory
-from langchain_community.chat_message_histories import ChatMessageHistory
+from langgraph.graph import StateGraph
+import sqlglot
 
 llm = ChatGroq(model="llama-3.3-70b-versatile")
 
-prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a helpful DevOps tutor. Explain things simply."),
-    ("human", "{input}")
-])
+def parser_agent(state):
+    print("DEBUG (parser):", state)
 
-chain = prompt | llm
+    query = state.get("query")
+    if not query:
+        return state
 
+    parsed = sqlglot.parse_one(query)
 
-store = {}
+    tables = [t.name for t in parsed.find_all(sqlglot.exp.Table)]
+    columns = [c.name for c in parsed.find_all(sqlglot.exp.Column)]
 
-def get_session_history(session_id):
-    if session_id not in store:
-        store[session_id] = ChatMessageHistory()
-    return store[session_id]
+    return {
+        **state,
+        "tables": tables,
+        "columns": columns
+    }
+def analyzer_agent(state):
+    print("DEBUG (analyzer):", state)
 
+    query = state.get("query")
+    if not query:
+        return state
 
-chain_with_memory = RunnableWithMessageHistory(
-    chain,
-    get_session_history,
-    input_messages_key="input"
-)
+    issues = []
 
+    if "SELECT *" in query.upper():
+        issues.append("Using SELECT * (inefficient)")
 
-while True:
-    user_input = input("You: ")
+    if "WHERE" not in query.upper():
+        issues.append("No WHERE clause (full table scan risk)")
 
-    if user_input.lower() == "exit":
-        break
+    return {
+        **state,
+        "issues": issues
+    }
+def optimizer_agent(state):
+    print("DEBUG (optimizer):", state)
 
-    response = chain_with_memory.invoke(
-        {"input": user_input},
-        config={"configurable": {"session_id": "user1"}}
-    )
+    query = state.get("query")
+    issues = state.get("issues", [])
 
-    print("AI:", response.content)
+    if not query:
+        return state
+
+    response = llm.invoke(f"""
+You are a SQL Optimization Expert.
+
+Analyze the query and suggest improvements.
+
+Query:
+{query}
+
+Issues:
+{issues}
+
+Give clear and practical suggestions.
+""")
+
+    return {
+        **state,
+        "suggestion": response.content
+    }
+
+graph = StateGraph(dict)   
+
+graph.add_node("parser", parser_agent)
+graph.add_node("analyzer", analyzer_agent)
+graph.add_node("optimizer", optimizer_agent)
+
+graph.set_entry_point("parser")
+
+graph.add_edge("parser", "analyzer")
+graph.add_edge("analyzer", "optimizer")
+
+app = graph.compile()
+
+if __name__ == "__main__":
+    while True:
+        query = input("\nEnter SQL Query (or 'exit'): ")
+
+        if query.lower() == "exit":
+            break
+
+        result = app.invoke({"query": query})
+
+        print("\n--- RESULT ---")
+        print("Tables:", result.get("tables"))
+        print("Columns:", result.get("columns"))
+        print("Issues:", result.get("issues"))
+        print("Suggestion:\n", result.get("suggestion"))
