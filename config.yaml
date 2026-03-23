@@ -1,0 +1,18 @@
+environment: dev
+
+llm:
+  provider: groq
+  model: llama-3.3-70b-versatile
+  temperature: 0
+
+database:
+  user: y
+
+databases:
+  dev:
+    host: localhost
+    port: 5432
+    name: sql_optimizer
+
+app:
+  max_queries: 5

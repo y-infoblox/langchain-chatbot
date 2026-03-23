@@ -1,0 +1,167 @@
+# LangChain Learning 
+
+## 1. Objective
+
+The goal was to understand the basics of LangChain and build a working AI chatbot using a free LLM (Groq), along with learning how to control AI behavior using prompt templates.
+
+---
+
+## 2. Environment Setup
+
+### Tools Used:
+
+* Python (3.x)
+* VS Code
+* Terminal (Mac)
+
+### Installed Libraries:
+
+pip3 install langchain langchain-openai langchain-community langchain-groq
+
+---
+
+## 3. Free LLM Integration (Groq)
+
+Since OpenAI required billing, we used Groq (free LLM provider).
+
+### Steps:
+
+1. Created API key from Groq Console
+2. Set environment variable:
+
+export GROQ_API_KEY="your_api_key"
+
+---
+
+## 4. Basic Chatbot Implementation
+
+### Code:
+
+from langchain_groq import ChatGroq
+from langchain_core.messages import HumanMessage
+
+llm = ChatGroq(model="llama3-8b-8192")
+
+while True:
+user_input = input("You: ")
+
+```
+if user_input.lower() == "exit":
+    break
+
+response = llm.invoke([
+    HumanMessage(content=user_input)
+])
+
+print("AI:", response.content)
+```
+
+---
+
+### Explanation:
+
+* ChatGroq → connects to LLM
+* HumanMessage → represents user input
+* invoke() → sends input to model and gets response
+
+---
+
+## 5. Limitations of Basic Chatbot
+
+* No personality
+* No structured output
+* No control over responses
+
+---
+
+## 6. Prompt Templates (LangChain Core Concept)
+
+Prompt templates allow structured and dynamic prompts.
+
+### Updated Code:
+
+from langchain_groq import ChatGroq
+from langchain_core.prompts import ChatPromptTemplate
+
+llm = ChatGroq(model="llama3-8b-8192")
+
+prompt = ChatPromptTemplate.from_messages([
+("system", "You are a helpful DevOps tutor. Explain simply."),
+("human", "{input}")
+])
+
+chain = prompt | llm
+
+while True:
+user_input = input("You: ")
+
+```
+if user_input.lower() == "exit":
+    break
+
+response = chain.invoke({"input": user_input})
+
+print("AI:", response.content)
+```
+
+---
+
+## 7. Key Concepts Learned
+
+### 1. LLM (Large Language Model)
+
+* Brain of the system (Llama3 via Groq)
+
+### 2. Prompt Engineering
+
+* Controlling AI behavior using system instructions
+
+### 3. Prompt Template
+
+* Dynamic input handling using placeholders like {input}
+
+### 4. Chain
+
+* Combining components using "|" operator
+* Flow: Input → Prompt → LLM → Output
+
+---
+
+## 8. Experiments Performed
+
+1. Changed system behavior:
+
+   * DevOps tutor
+   * Sarcastic AI
+   * Interviewer
+
+2. Controlled output format:
+
+   * Bullet points
+   * Short explanations
+
+---
+
+## 9. Key Learnings
+
+* LangChain is not just about calling LLMs, but structuring and controlling them.
+* Prompt templates are essential for building real-world AI applications.
+* Chains allow modular and scalable design.
+
+---
+
+## 10. Outcome
+
+Successfully built:
+
+* Interactive chatbot
+* Prompt-controlled AI system
+* Basic LangChain pipeline
+
+---
+
+## 11. Next Steps
+
+* Add Memory (chat history)
+* Build AI Agents (tool usage)
+* Learn LangGraph for workflow-based AI systems
