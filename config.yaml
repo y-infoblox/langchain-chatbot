@@ -10,7 +10,7 @@ database:
 
 databases:
   dev:
-    host: localhost
+    host: db
     port: 5432
     name: sql_optimizer
 

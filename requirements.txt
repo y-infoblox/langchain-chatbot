@@ -1,0 +1,7 @@
+langchain
+langchain-groq
+langgraph
+sqlglot
+psycopg2-binary
+python-dotenv
+PyYAML

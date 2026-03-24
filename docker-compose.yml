@@ -1,0 +1,26 @@
+services:
+  db:
+    image: postgres:16
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: y
+      POSTGRES_PASSWORD: mypassword123
+      POSTGRES_DB: sql_optimizer
+    ports:
+      - "5432:5432"
+    command: >
+      postgres -c shared_preload_libraries=pg_stat_statements
+
+  app:
+    build: .
+    container_name: sql_optimizer_app
+    depends_on:
+      - db
+    environment:
+      DB_PASSWORD: mypassword123
+      GROQ_API_KEY: ${GROQ_API_KEY}
+    volumes:
+      - .:/app
+    command: >
+      sh -c "sleep 5 && python main.py"
