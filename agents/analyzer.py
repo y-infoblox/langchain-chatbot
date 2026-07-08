@@ -1,4 +1,7 @@
 def analyzer_agent(state):
+    if state.get("is_greeting"):
+        return state
+
     query = state.get("query")
     issues = []
 
