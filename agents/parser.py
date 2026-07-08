@@ -5,7 +5,7 @@ def parser_agent(state):
     if not query:
         return state
 
-    if query.strip().lower() == "hi":
+    if query.strip().lower() in {"hi", "hello", "hey"}:
         return {
             **state,
             "is_greeting": True,
