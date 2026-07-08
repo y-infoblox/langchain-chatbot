@@ -7,6 +7,9 @@ def get_llm(config):
     )
 
 def optimizer_agent(state, config):
+    if state.get("is_greeting"):
+        return state
+
     query = state.get("query")
     issues = state.get("issues", [])
 
